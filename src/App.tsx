@@ -15,6 +15,7 @@ export function App() {
   const { data: transactionsByEmployee, ...transactionsByEmployeeUtils } =
     useTransactionsByEmployee();
   const [isLoading, setIsLoading] = useState(false);
+  // const [nextTransactions, setNextTransactions] = useState(null);
 
   const transactions = useMemo(
     () => paginatedTransactions?.data ?? transactionsByEmployee ?? null,
@@ -67,7 +68,11 @@ export function App() {
               return;
             }
 
-            await loadTransactionsByEmployee(newValue.id);
+            if (newValue.id) {
+              await loadTransactionsByEmployee(newValue.id);
+            } else {
+              loadAllTransactions();
+            }
           }}
         />
 
