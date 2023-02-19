@@ -21,8 +21,6 @@ export function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasMoreData, setHasMoreData] = useState(true);
 
-  console.log(isLoading);
-
   const transactions = useMemo(
     () => paginatedTransactions?.data ?? transactionsByEmployee ?? null,
     [paginatedTransactions, transactionsByEmployee]
@@ -55,6 +53,12 @@ export function App() {
       setHasMoreData(paginatedTransactions?.data.length < 14);
     }
   }, [employeeUtils, employees, employeesLoading, paginatedTransactions]);
+
+  useEffect(() => {
+    if (transactions === null && !isLoading) {
+      loadAllTransactions();
+    } // eslint-disable-next-line
+  }, []);
 
   return (
     <Fragment>
