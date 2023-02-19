@@ -9,13 +9,17 @@ import { EMPTY_EMPLOYEE } from "./utils/constants";
 import { Employee } from "./utils/types";
 
 export function App() {
-  const { data: employees, ...employeeUtils } = useEmployees();
+  const {
+    data: employees,
+    loading: employeesLoading,
+    ...employeeUtils
+  } = useEmployees();
   const { data: paginatedTransactions, ...paginatedTransactionsUtils } =
     usePaginatedTransactions();
   const { data: transactionsByEmployee, ...transactionsByEmployeeUtils } =
     useTransactionsByEmployee();
   const [isLoading, setIsLoading] = useState(false);
-  // const [nextTransactions, setNextTransactions] = useState(null);
+  const [hasMoreData, setHasMoreData] = useState(true);
 
   const transactions = useMemo(
     () => paginatedTransactions?.data ?? transactionsByEmployee ?? null,
@@ -41,10 +45,14 @@ export function App() {
   );
 
   useEffect(() => {
-    if (employees === null && !employeeUtils.loading) {
-      loadAllTransactions();
+    if (employees === null && !employeesLoading) {
+      employeeUtils.fetchAll();
     }
-  }, [employeeUtils.loading, employees, loadAllTransactions]);
+
+    if (paginatedTransactions && paginatedTransactions.data) {
+      setHasMoreData(paginatedTransactions?.data.length < 14);
+    }
+  }, [employeeUtils, employees, employeesLoading, paginatedTransactions]);
 
   return (
     <Fragment>
@@ -54,7 +62,7 @@ export function App() {
         <hr className="RampBreak--l" />
 
         <InputSelect<Employee>
-          isLoading={isLoading}
+          isLoading={employeesLoading}
           defaultValue={EMPTY_EMPLOYEE}
           items={employees === null ? [] : [EMPTY_EMPLOYEE, ...employees]}
           label="Filter by employee"
@@ -81,7 +89,7 @@ export function App() {
         <div className="RampGrid">
           <Transactions transactions={transactions} />
 
-          {transactions !== null && (
+          {transactions !== null && hasMoreData && !transactionsByEmployee && (
             <button
               className="RampButton"
               disabled={paginatedTransactionsUtils.loading}
